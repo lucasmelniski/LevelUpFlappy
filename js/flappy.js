@@ -73,7 +73,7 @@ function BarrierS (height, width, spacing, distance, pointing, nextLevel){
                     pointing()
                     nextLevel()
                     console.log(`Pontos: ${points}`)
-                    console.log(Screen.style.left)
+                    
                 }
             })
         }
@@ -109,6 +109,21 @@ function BarrierS (height, width, spacing, distance, pointing, nextLevel){
         this.setY (heightScreen / 2)
     }
     
+        function levelProgress() {
+            this.element = newElement('span', 'levelprogress')
+            
+            
+            this.attLevel = level => {
+                this.element.innerHTML = level
+                if(level > 1){
+                screenNextLevel()
+                }
+            }
+
+            this.attLevel(level)
+
+        }
+
     function Pointing(){
         this.element = newElement ('span', 'progress')
         points = this.element.points
@@ -119,19 +134,30 @@ function BarrierS (height, width, spacing, distance, pointing, nextLevel){
         this.attPoints(points)
     }
     
-    function ScreenOfLevelUp() {
+   function screenNextLevel(){
+    setTimeout(() => {
+        Screen = document.querySelector('.next-level')
         
-        this.Screen = document.querySelector('.next-level')
+        console.log(Screen)
+        Screen.style.left = "00000px"
 
-        setTimeout(()=>{
-            Screen.style.left = "00000px"
-            setTimeout(() => {
-                Screen.style.left = "-1000000px"
-                points = 0
-                console.log(`level: ${level}`)
-            }, 3000)
-        }, 500)
-    }    
+        let resetBarriers = document.querySelectorAll('.pair-of-barriers');
+        [].slice.call(resetBarriers).forEach(function (element) {
+            this.getX = () => parseInt(element.style.left.split('px')[0])
+            this.setX = x => element.style.left = `${x}px`
+            let posicao = this.getX(element)
+            let posicaonova = posicao + 2500
+            this.setX(posicaonova)
+
+        });
+        setTimeout(() => {
+            Screen.style.left = "-1000000px"
+            points = 0
+            console.log(`level: ${level}`)
+        }, 3000)
+
+    }, 500)
+   }
     
     function overflow (A, B) {
         
@@ -163,15 +189,14 @@ function BarrierS (height, width, spacing, distance, pointing, nextLevel){
     
     function Flappy() {
         const area = document.querySelector('[wm-flappy]')
-        
+        const levelprogress = new levelProgress()
         const Height = area.clientHeight
         const Width = area.clientWidth
         const progress = new Pointing()
-        
-        const barriers = new BarrierS(Height, Width, 200, 400, () => progress.attPoints(++points), () => {if(points >= level *5){++level && ScreenOfLevelUp()}})
+        const barriers = new BarrierS(Height, Width, 200, 400, () => progress.attPoints(++points), () => {if(points >= level *5){levelprogress.attLevel(++level)}})
         const bird = new Bird(Height)
         
-    
+        area.appendChild(levelprogress.element)
         area.appendChild(progress.element)
         area.appendChild(bird.element)
         barriers.pairs.forEach(pair => area.appendChild(pair.element))
@@ -182,9 +207,9 @@ function BarrierS (height, width, spacing, distance, pointing, nextLevel){
             barriers.animate()
                 bird.animate()
 
-                 if( collided(bird, barriers)){
+                if( collided(bird, barriers)){
                      clearInterval(timer)
-                 }
+                }
             }, 20)            
         }
     } 
